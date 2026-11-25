@@ -1,0 +1,343 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VR Vault | My Files</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: #101114;
+    color: white;
+    padding: 30px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+h1 span {
+    color: #ff7900;
+}
+
+.back {
+    color: #ff7900;
+    text-decoration: none;
+}
+
+.search {
+    width: 100%;
+    padding: 14px;
+    margin-bottom: 25px;
+    background: #1c1c21;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: white;
+}
+
+.folders {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    margin-bottom: 35px;
+}
+
+.folder {
+    background: #1c1c21;
+    padding: 22px;
+    border: 1px solid #303036;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.folder:hover {
+    border-color: #ff7900;
+    transform: translateY(-3px);
+}
+
+.folder-icon {
+    font-size: 35px;
+    margin-bottom: 12px;
+}
+
+.folder p {
+    color: #999;
+    margin-top: 8px;
+    font-size: 14px;
+}
+
+.files {
+    background: #1c1c21;
+    border: 1px solid #303036;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.file {
+    padding: 18px 5px;
+    border-bottom: 1px solid #333;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.file:last-child {
+    border-bottom: none;
+}
+
+.file small {
+    color: #888;
+}
+
+@media(max-width: 600px) {
+    body {
+        padding: 15px;
+    }
+
+    .file {
+        flex-direction: column;
+    }
+}
+
+.delete-btn {
+    background: #3a2020;
+    color: #ff6b6b;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.delete-btn:hover {
+    background: #612b2b;
+}
+
+.file {
+    align-items: center;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <h1>My <span>Files</span></h1>
+    <a href="dashboard.html" class="back">← Dashboard</a>
+</div>
+
+<input
+    type="text"
+    class="search"
+    id="search"
+    placeholder="Search your files..."
+>
+<button onclick="filterFiles('all')"
+        style="background:#ff7900;color:white;padding:10px 18px;border:0;border-radius:6px;cursor:pointer;margin-bottom:20px;">
+    View All Files
+</button>
+
+<h2 style="margin-bottom:20px;">Folders</h2>
+
+<div class="folders">
+
+    <div class="folder" onclick="filterFiles('documents')">
+        <div class="folder-icon">📁</div>
+        <h3>Documents</h3>
+        <p>Personal documents</p>
+    </div>
+
+    <div class="folder" onclick="filterFiles('photos')">
+        <div class="folder-icon">📁</div>
+        <h3>Photos</h3>
+        <p>Pictures and memories</p>
+    </div>
+
+    <div class="folder" onclick="filterFiles('videos')">
+        <div class="folder-icon">📁</div>
+        <h3>Videos</h3>
+        <p>Personal videos</p>
+    </div>
+
+    <div class="folder" onclick="filterFiles('backups')">
+        <div class="folder-icon">📁</div>
+        <h3>Backups</h3>
+        <p>Device backups</p>
+    </div>
+
+</div>
+
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+
+    <h2>All Files</h2>
+
+    <button onclick="document.getElementById('fileInput').click()"
+            style="background:#ff7900;color:white;padding:10px 18px;border:0;border-radius:6px;cursor:pointer;">
+        + Upload Files
+    </button>
+
+</div>
+
+<input type="file" id="fileInput" multiple style="display:none;">
+
+<div class="files" id="fileList">
+
+    <div class="file" data-category="documents">
+        <span>📄 Personal_Documents.pdf</span>
+        <small>2.4 MB</small>
+    </div>
+
+    <div class="file" data-category="photos">
+        <span>🖼️ Vacation_Photo.jpg</span>
+        <small>4.8 MB</small>
+    </div>
+
+    <div class="file" data-category="videos">
+        <span>🎬 Family_Video.mp4</span>
+        <small>850 MB</small>
+    </div>
+
+    <div class="file" data-category="backups">
+        <span>📦 Phone_Backup.zip</span>
+        <small>5.2 GB</small>
+    </div>
+
+</div>
+
+<script>
+let selectedCategory = "all";
+
+function filterFiles(category) {
+    selectedCategory = category;
+    displayFiles();
+}
+
+function displayFiles() {
+    let searchText = document.getElementById("search").value.toLowerCase();
+    let files = document.querySelectorAll(".file");
+
+    files.forEach(function(file) {
+        let nameElement = file.querySelector("span");
+        let fileName = nameElement ? nameElement.textContent.toLowerCase() : "";
+        let category = file.dataset.category;
+
+        let matchesSearch = fileName.includes(searchText);
+        let matchesCategory = selectedCategory === "all" || category === selectedCategory;
+
+        file.style.display = matchesSearch && matchesCategory ? "flex" : "none";
+    });
+}
+
+// Create Delete button
+function createDeleteButton(file) {
+    let button = document.createElement("button");
+
+    button.textContent = "Delete";
+    button.className = "delete-btn";
+    button.type = "button";
+
+    file.appendChild(button);
+}
+
+// Add Delete buttons to files already present
+document.querySelectorAll(".file").forEach(function(file) {
+    createDeleteButton(file);
+});
+
+// Search
+document.getElementById("search").addEventListener("input", displayFiles);
+
+// Delete functionality
+document.getElementById("fileList").addEventListener("click", function(event) {
+
+    if (event.target.classList.contains("delete-btn")) {
+        let file = event.target.closest(".file");
+
+        if (confirm("Remove this file from the list?")) {
+            file.remove();
+        }
+    }
+
+});
+
+// Upload functionality
+document.getElementById("fileInput").addEventListener("change", function() {
+
+    let selectedFiles = this.files;
+    let fileList = document.getElementById("fileList");
+
+    for (let i = 0; i < selectedFiles.length; i++) {
+
+        let file = selectedFiles[i];
+        let extension = file.name.split(".").pop().toLowerCase();
+
+        let category = "documents";
+        let icon = "📄";
+
+        if (["jpg", "jpeg", "png", "gif", "webp"].includes(extension)) {
+            category = "photos";
+            icon = "🖼️";
+        }
+        else if (["mp4", "mkv", "mov", "avi"].includes(extension)) {
+            category = "videos";
+            icon = "🎬";
+        }
+        else if (["zip", "rar", "7z"].includes(extension)) {
+            category = "backups";
+            icon = "📦";
+        }
+
+        let newFile = document.createElement("div");
+        newFile.className = "file";
+        newFile.dataset.category = category;
+
+        let name = document.createElement("span");
+        name.textContent = icon + " " + file.name;
+
+        let size = document.createElement("small");
+        size.textContent = formatSize(file.size);
+
+        newFile.appendChild(name);
+        newFile.appendChild(size);
+
+        // Add Delete button directly to new file
+        createDeleteButton(newFile);
+
+        fileList.appendChild(newFile);
+    }
+
+    displayFiles();
+
+    this.value = "";
+});
+
+// File size conversion
+function formatSize(bytes) {
+    if (bytes < 1024) {
+        return bytes + " Bytes";
+    }
+    else if (bytes < 1024 * 1024) {
+        return (bytes / 1024).toFixed(2) + " KB";
+    }
+    else if (bytes < 1024 * 1024 * 1024) {
+        return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+    }
+    else {
+        return (bytes / (1024 * 1024 * 1024)).toFixed(2) + " GB";
+    }
+}
+</script>
+
+</body>
+</html>
